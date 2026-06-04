@@ -1,0 +1,49 @@
+name: Deploy to development
+
+# Flagsmith images come straight from Docker Hub, so we do NOT use the shared
+# deploy-ecs.yml reusable workflow (it requires a .ruby-version + Dockerfile and
+# builds/pushes an image to ECR). Instead we reuse the terraform-plan /
+# terraform-apply composite actions directly: no build step, just plan & apply.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
+
+jobs:
+  plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
+        with:
+          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+      - uses: actions/checkout@v6.0.2
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-plan@main
+        with:
+          environment: development
+          ref: ${{ github.sha }}
+          role-to-assume: ${{ env.ROLE_ARN }}
+
+  apply:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'needs-deployment')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
+        with:
+          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+      - uses: actions/checkout@v6.0.2
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-apply@main
+        with:
+          environment: development
+          ref: ${{ github.sha }}
+          role-to-assume: ${{ env.ROLE_ARN }}
