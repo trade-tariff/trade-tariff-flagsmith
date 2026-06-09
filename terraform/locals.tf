@@ -33,6 +33,7 @@ locals {
     { name = "USE_X_FORWARDED_HOST", value = "1" },
     { name = "SECURE_PROXY_SSL_HEADER_NAME", value = "HTTP_X_FORWARDED_PROTO" },
     { name = "SECURE_PROXY_SSL_HEADER_VALUE", value = "https" },
+    { name = "ALLOW_REGISTRATION_WITHOUT_INVITE", value = "true" }
   ]
 
   flagsmith_logging_env_vars = [
