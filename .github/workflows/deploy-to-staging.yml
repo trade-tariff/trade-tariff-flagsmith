@@ -1,0 +1,24 @@
+name: Deploy to staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
+        with:
+          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+      - uses: actions/checkout@v6.0.2
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-apply@main
+        with:
+          environment: staging
+          ref: ${{ github.sha }}
+          role-to-assume: arn:aws:iam::451934005581:role/GithubActions-ECS-Deployments-Role
