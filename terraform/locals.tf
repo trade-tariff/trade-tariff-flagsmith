@@ -35,7 +35,16 @@ locals {
     { name = "SECURE_PROXY_SSL_HEADER_VALUE", value = "https" },
   ]
 
-  flagsmith_env_vars = concat(local.flagsmith_static_env_vars, local.config_env_vars)
+  flagsmith_logging_env_vars = [
+    { name = "ACCESS_LOG_LOCATION", value = "-" },
+    { name = "LOG_LEVEL", value = var.environment == "development" ? "DEBUG" : "INFO" },
+  ]
+
+  flagsmith_env_vars = concat(
+    local.flagsmith_static_env_vars,
+    local.flagsmith_logging_env_vars,
+    local.config_env_vars,
+  )
 
   # Static env vars for the Edge Proxy.
   edge_static_env_vars = [
