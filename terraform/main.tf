@@ -25,7 +25,6 @@ module "flagsmith" {
 
   docker_image = "flagsmith/flagsmith"
   docker_tag   = var.flagsmith_tag
-  skip_destroy = true
 
   cpu    = var.cpu
   memory = var.memory

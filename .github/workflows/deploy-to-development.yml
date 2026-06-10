@@ -33,6 +33,7 @@ jobs:
           role-to-assume: ${{ env.ROLE_ARN }}
 
   apply:
+    needs: plan
     if: >
       github.event_name == 'workflow_dispatch' ||
       contains(github.event.pull_request.labels.*.name, 'needs-deployment')

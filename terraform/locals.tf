@@ -15,8 +15,21 @@ locals {
 
   # Operator-managed config secrets, expanded into individual env vars.
   config_map = jsondecode(try(data.aws_secretsmanager_secret_version.configuration.secret_string, "{}"))
+  flagsmith_managed_env_var_names = [
+    "ACCESS_LOG_LOCATION",
+    "ALLOW_REGISTRATION_WITHOUT_INVITE",
+    "DATABASE_URL",
+    "DJANGO_ALLOWED_HOSTS",
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    "FLAGSMITH_DOMAIN",
+    "LOG_LEVEL",
+    "SECURE_PROXY_SSL_HEADER_NAME",
+    "SECURE_PROXY_SSL_HEADER_VALUE",
+    "USE_X_FORWARDED_HOST",
+  ]
   config_env_vars = [
     for key, value in local.config_map : { name = key, value = tostring(value) }
+    if !contains(local.flagsmith_managed_env_var_names, key)
   ]
 
   edge_config_map = jsondecode(try(data.aws_secretsmanager_secret_version.edge_configuration.secret_string, "{}"))
@@ -27,12 +40,13 @@ locals {
   # Static env vars for the Flagsmith API.
   flagsmith_static_env_vars = [
     { name = "DATABASE_URL", value = data.aws_secretsmanager_secret_version.database.secret_string },
-    { name = "DJANGO_ALLOWED_HOSTS", value = local.flags_host },
+    { name = "DJANGO_ALLOWED_HOSTS", value = "*" },
     { name = "DJANGO_CSRF_TRUSTED_ORIGINS", value = local.flags_url },
     { name = "FLAGSMITH_DOMAIN", value = local.flags_host },
     { name = "USE_X_FORWARDED_HOST", value = "1" },
     { name = "SECURE_PROXY_SSL_HEADER_NAME", value = "HTTP_X_FORWARDED_PROTO" },
     { name = "SECURE_PROXY_SSL_HEADER_VALUE", value = "https" },
+    { name = "ALLOW_REGISTRATION_WITHOUT_INVITE", value = tostring(lookup(local.config_map, "ALLOW_REGISTRATION_WITHOUT_INVITE", "true")) }
   ]
 
   flagsmith_logging_env_vars = [
@@ -48,7 +62,7 @@ locals {
 
   # Static env vars for the Edge Proxy.
   edge_static_env_vars = [
-    { name = "FLAGSMITH_API_URL", value = "${local.flags_url}/api/v1/" },
+    { name = "API_URL", value = "${local.flags_url}/api/v1" },
   ]
 
   edge_env_vars = concat(local.edge_static_env_vars, local.edge_config_env_vars)
