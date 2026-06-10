@@ -49,7 +49,7 @@ locals {
 
   # Static env vars for the Edge Proxy.
   edge_static_env_vars = [
-    { name = "FLAGSMITH_API_URL", value = "${local.flags_url}/api/v1/" },
+    { name = "API_URL", value = "${local.flags_url}/api/v1" },
   ]
 
   edge_env_vars = concat(local.edge_static_env_vars, local.edge_config_env_vars)

@@ -76,11 +76,11 @@ The config secrets start empty; populate them after the first deploy:
 2. Visit `https://flags.<env>.trade-tariff.service.gov.uk` and create the first
    admin user (registration is open until the first user exists; lock it down
    afterwards via `ALLOW_REGISTRATION_WITHOUT_INVITE=false` in the secret).
-3. Create a project + environment in Flagsmith and copy the **server-side
-   environment key**.
+3. Create a project + environment in Flagsmith and copy both the **server-side
+   environment key** and the matching **client-side environment key**.
 4. Put it into `flagsmith-edge-configuration`:
-   `{"FLAGSMITH_API_SERVER_SIDE_ENVIRONMENT_KEY": "<key>"}` and redeploy the
-   `flagsmith-edge` service.
+   `{"ENVIRONMENT_KEY_PAIRS": "[{\"server_side_key\":\"<server-side-key>\",\"client_side_key\":\"<client-side-key>\"}]"}`
+   and redeploy the `flagsmith-edge` service.
 
 ## Local terraform
 
