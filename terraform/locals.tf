@@ -1,6 +1,4 @@
 locals {
-  account_id = data.aws_caller_identity.current.account_id
-
   # Public domain per environment (matches the terraform repo's common stacks).
   domains = {
     development = "dev.trade-tariff.service.gov.uk"
