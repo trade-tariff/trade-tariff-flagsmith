@@ -31,8 +31,12 @@ locals {
   ]
 
   edge_config_map = jsondecode(try(data.aws_secretsmanager_secret_version.edge_configuration.secret_string, "{}"))
+  edge_managed_env_var_names = [
+    "API_URL",
+  ]
   edge_config_env_vars = [
     for key, value in local.edge_config_map : { name = key, value = tostring(value) }
+    if !contains(local.edge_managed_env_var_names, key)
   ]
 
   # Static env vars for the Flagsmith API.
