@@ -26,6 +26,8 @@ module "flagsmith" {
   docker_image = "flagsmith/flagsmith"
   docker_tag   = var.flagsmith_tag
 
+  private_dns_namespace = "tariff.internal"
+
   cpu    = var.cpu
   memory = var.memory
 
@@ -56,6 +58,10 @@ module "flagsmith" {
 module "flagsmith_edge" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.1.0"
 
+  # Edge fetches its environment document from the Flagsmith API over Cloud Map,
+  # so the API service registration needs to exist before edge rolls forward.
+  depends_on = [module.flagsmith]
+
   region = var.region
 
   service_name  = "flagsmith-edge"
@@ -73,6 +79,8 @@ module "flagsmith_edge" {
   docker_image = "flagsmith/edge-proxy"
   docker_tag   = var.edge_proxy_tag
   skip_destroy = true
+
+  private_dns_namespace = "tariff.internal"
 
   cpu    = var.cpu
   memory = var.memory

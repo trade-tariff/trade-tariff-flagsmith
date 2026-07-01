@@ -31,13 +31,6 @@ locals {
   ]
 
   edge_config_map = jsondecode(try(data.aws_secretsmanager_secret_version.edge_configuration.secret_string, "{}"))
-  edge_managed_env_var_names = [
-    "API_URL",
-  ]
-  edge_config_env_vars = [
-    for key, value in local.edge_config_map : { name = key, value = tostring(value) }
-    if !contains(local.edge_managed_env_var_names, key)
-  ]
 
   # Static env vars for the Flagsmith API.
   flagsmith_static_env_vars = [
@@ -62,12 +55,14 @@ locals {
     local.config_env_vars,
   )
 
-  # Static env vars for the Edge Proxy.
-  edge_static_env_vars = [
-    { name = "API_URL", value = "${local.flags_url}/api/v1" },
+  edge_env_vars = [
+    for key, value in merge(
+      local.edge_config_map,
+      {
+        API_URL = "http://flagsmith.tariff.internal:8000/api/v1"
+      }
+    ) : { name = key, value = tostring(value) }
   ]
-
-  edge_env_vars = concat(local.edge_static_env_vars, local.edge_config_env_vars)
 
   has_autoscaler = var.environment == "development" ? false : true
 }
