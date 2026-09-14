@@ -58,3 +58,8 @@ data "aws_secretsmanager_secret_version" "edge_configuration" {
 data "aws_sns_topic" "slack_topic" {
   name = "slack-topic"
 }
+
+data "aws_sns_topic" "slack_observability_topic" {
+  count = var.enable_observability_alerts ? 1 : 0
+  name  = "slack-observability-topic"
+}

@@ -1,13 +1,13 @@
 # Self-hosted Flagsmith — API/dashboard and edge proxy.
 #
-# Both are plain Django/Go HTTP services pulled straight from Docker Hub and
+# Both are plain Django/FastAPI HTTP services pulled straight from Docker Hub and
 # deployed via the shared ecs-service module, exactly like our other apps. The
 # supporting infrastructure (database, security groups, secrets, ALB target
 # groups, CloudFront) lives in the terraform repo's common stacks; this repo
 # only deploys the running services against it.
 
 module "flagsmith" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.1.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
 
   region = var.region
 
@@ -34,6 +34,14 @@ module "flagsmith" {
   task_role_policy_arns = [aws_iam_policy.task.arn]
   enable_ecs_exec       = true
 
+  # USER nobody (wolfi-baselayout) = UID/GID 65534:65534. /tmp/prometheus is baked
+  # into the image (prometheus_client multiprocess metrics) but gets masked when /tmp
+  # is mounted as its own ephemeral volume — must be listed separately, or
+  # prometheus_client crashes with FileNotFoundError instead of creating the dir.
+  readonly_root_filesystem = true
+  writable_paths           = ["/tmp", "/tmp/prometheus"]
+  container_user           = "65534:65534"
+
   service_environment_config = local.flagsmith_env_vars
 
   has_autoscaler = local.has_autoscaler
@@ -51,12 +59,15 @@ module "flagsmith" {
     }
   }
 
-  enable_alarms  = true
-  sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
+  enable_alarms       = var.enable_alarms
+  cpu_alarm_threshold = 75
+
+  sns_topic_arns               = [data.aws_sns_topic.slack_topic.arn]
+  observability_sns_topic_arns = var.enable_observability_alerts ? [data.aws_sns_topic.slack_observability_topic[0].arn] : null
 }
 
 module "flagsmith_edge" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.1.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
 
   # Edge fetches its environment document from the Flagsmith API over Cloud Map,
   # so the API service registration needs to exist before edge rolls forward.
@@ -88,6 +99,12 @@ module "flagsmith_edge" {
   task_role_policy_arns = [aws_iam_policy.task.arn]
   enable_ecs_exec       = true
 
+  # USER nobody (Debian base-passwd, python:3.12-slim) is UID/GID 65534:65534.
+  # edge-proxy caches in memory and logs to stdout — /tmp is kept writable as a margin.
+  readonly_root_filesystem = true
+  writable_paths           = ["/tmp"]
+  container_user           = "65534:65534"
+
   service_environment_config = local.edge_env_vars
 
   has_autoscaler = local.has_autoscaler
@@ -101,6 +118,9 @@ module "flagsmith_edge" {
     }
   }
 
-  enable_alarms  = true
-  sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
+  enable_alarms       = var.enable_alarms
+  cpu_alarm_threshold = 75
+
+  sns_topic_arns               = [data.aws_sns_topic.slack_topic.arn]
+  observability_sns_topic_arns = var.enable_observability_alerts ? [data.aws_sns_topic.slack_observability_topic[0].arn] : null
 }
