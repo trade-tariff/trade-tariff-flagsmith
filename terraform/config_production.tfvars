@@ -5,3 +5,6 @@ memory        = 2048
 service_count = 2
 min_capacity  = 2
 max_capacity  = 4
+
+enable_alarms               = true
+enable_observability_alerts = true

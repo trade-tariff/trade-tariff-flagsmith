@@ -44,3 +44,14 @@ variable "max_capacity" {
   description = "Largest number of tasks the service can scale-out to."
   type        = number
 }
+
+variable "enable_alarms" {
+  description = "Whether to enable CloudWatch alarms for the service."
+  type        = bool
+  default     = false
+}
+
+variable "enable_observability_alerts" {
+  type    = bool
+  default = false
+}
