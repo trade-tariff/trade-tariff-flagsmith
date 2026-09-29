@@ -86,10 +86,29 @@ The config secrets start empty; populate them after the first deploy:
    `{"ENVIRONMENT_KEY_PAIRS": "[{\"server_side_key\":\"<server-side-key>\",\"client_side_key\":\"<client-side-key>\"}]"}`
    and redeploy the `flagsmith-edge` service.
 
-## Local terraform
+## Check changes locally
+
+Use a Terraform version compatible with [terraform/](terraform/). Check syntax
+and provider configuration without applying resources:
 
 ```sh
-cd terraform
-terraform init -backend-config=...   # backend config supplied by CI / tooling
-terraform plan  -var-file=config_development.tfvars
+terraform -chdir=terraform fmt -check -recursive
+terraform -chdir=terraform init -backend=false
+terraform -chdir=terraform validate
 ```
+
+Initialisation downloads providers and modules. A real plan needs authorised
+AWS access and the correct backend configuration; an apply changes shared
+services. Do not initialise live state or deploy just to check documentation.
+
+## Contribute
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for the fork workflow, checks and private
+security reporting. Changes to registration, secrets or image versions need
+review by the service owner.
+
+## Licence
+
+The deployment code and associated documentation use the [MIT licence](LICENCE.md),
+with Crown copyright (HM Revenue & Customs). This does not replace the licences
+of the upstream Flagsmith images, components or dependencies.
