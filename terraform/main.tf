@@ -7,7 +7,7 @@
 # only deploys the running services against it.
 
 module "flagsmith" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
+  source = "git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
 
   region = var.region
 
@@ -67,7 +67,7 @@ module "flagsmith" {
 }
 
 module "flagsmith_edge" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
+  source = "git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
 
   # Edge fetches its environment document from the Flagsmith API over Cloud Map,
   # so the API service registration needs to exist before edge rolls forward.
