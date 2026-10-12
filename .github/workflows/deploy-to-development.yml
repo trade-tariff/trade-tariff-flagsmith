@@ -22,9 +22,6 @@ jobs:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
-        with:
-          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
       - uses: actions/checkout@v7.0.1
       - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-plan@main
         with:
@@ -39,9 +36,6 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'needs-deployment')
     runs-on: ubuntu-latest
     steps:
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
-        with:
-          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
       - uses: actions/checkout@v7.0.1
       - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-apply@main
         with:
