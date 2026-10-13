@@ -1,4 +1,10 @@
 locals {
+  # Cost allocation tags. Activate them in the Billing console so Cost Explorer
+  # can group costs by component. The module copies them to each Fargate task.
+  cost_allocation_tags = {
+    Component = "flagsmith"
+  }
+
   # Public domain per environment (matches the terraform repo's common stacks).
   domains = {
     development = "dev.trade-tariff.service.gov.uk"

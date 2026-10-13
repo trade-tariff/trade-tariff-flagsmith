@@ -7,7 +7,7 @@
 # only deploys the running services against it.
 
 module "flagsmith" {
-  source = "git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
+  source = "git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.6.0"
 
   region = var.region
 
@@ -64,10 +64,12 @@ module "flagsmith" {
 
   sns_topic_arns               = [data.aws_sns_topic.slack_topic.arn]
   observability_sns_topic_arns = var.enable_observability_alerts ? [data.aws_sns_topic.slack_observability_topic[0].arn] : null
+
+  tags = local.cost_allocation_tags
 }
 
 module "flagsmith_edge" {
-  source = "git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.3.1"
+  source = "git::https://github.com/trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.6.0"
 
   # Edge fetches its environment document from the Flagsmith API over Cloud Map,
   # so the API service registration needs to exist before edge rolls forward.
@@ -123,4 +125,6 @@ module "flagsmith_edge" {
 
   sns_topic_arns               = [data.aws_sns_topic.slack_topic.arn]
   observability_sns_topic_arns = var.enable_observability_alerts ? [data.aws_sns_topic.slack_observability_topic[0].arn] : null
+
+  tags = local.cost_allocation_tags
 }
